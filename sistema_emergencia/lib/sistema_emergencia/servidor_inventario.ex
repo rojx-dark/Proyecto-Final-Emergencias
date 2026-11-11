@@ -13,10 +13,6 @@ defmodule SistemaEmergencia.ServidorInventario do
   @archivo_necesidades "needs.txt"
   @archivo_albergues "shelters.txt"
 
-  # ===========================================================================
-  # 1. API PÚBLICA (Cliente)
-  # ===========================================================================
-
   def start_link(opts \\ []), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
 
   def registrar_recurso(codigo, nombre, categoria, cantidad, unidad, ubicacion, usuario \\ "sistema"),
@@ -58,10 +54,6 @@ defmodule SistemaEmergencia.ServidorInventario do
   def reiniciar_estado,
     do: GenServer.call(__MODULE__, :reiniciar_estado)
 
-  # ===========================================================================
-  # 2. CALLBACKS DE GENSERVER (Cortos y declarativos)
-  # ===========================================================================
-
   @impl true
   def init(_opts) do
     recursos = Persistencia.cargar_coleccion(@archivo_recursos, & &1.codigo)
@@ -79,6 +71,7 @@ defmodule SistemaEmergencia.ServidorInventario do
 
   @impl true
   def handle_call({:registrar_recurso, cod, nom, cat, cant, uni, ubi, user}, _from, state) do
+    state = recargar_desde_disco(state)
     case construir_o_sumar_recurso(state.recursos, cod, nom, cat, cant, uni, ubi) do
       {:ok, recurso, nuevos_recursos} ->
         persistir_y_auditar(@archivo_recursos, nuevos_recursos, user, "register_resource", "#{cod} +#{cant}")
@@ -91,11 +84,13 @@ defmodule SistemaEmergencia.ServidorInventario do
 
   @impl true
   def handle_call({:listar_recursos, filtros}, _from, state) do
-     {:reply, filtrar_recursos(Map.values(state.recursos), filtros), state}
+    state = recargar_desde_disco(state)
+    {:reply, filtrar_recursos(Map.values(state.recursos), filtros), state}
   end
 
   @impl true
   def handle_call({:transferir_recurso, cod, origen, destino, cant, user}, _from, state) do
+    state = recargar_desde_disco(state)
     case ejecutar_transferencia(state.recursos, cod, origen, destino, cant) do
       {:ok, resultado, nuevos_recursos} ->
         persistir_y_auditar(@archivo_recursos, nuevos_recursos, user, "transfer_resource", "#{cod}: #{cant} -> #{destino}")
@@ -108,6 +103,7 @@ defmodule SistemaEmergencia.ServidorInventario do
 
   @impl true
   def handle_call({:registrar_necesidad, id_opt, tipo, cant, prio, zona, desc, resp}, _from, state) do
+    state = recargar_desde_disco(state)
     id = generar_id_necesidad(id_opt, state.contador_nec)
 
     case construir_necesidad(state.necesidades, id, tipo, cant, prio, zona, desc, resp) do
@@ -122,6 +118,7 @@ defmodule SistemaEmergencia.ServidorInventario do
 
   @impl true
   def handle_call({:listar_necesidades, filtros}, _from, state) do
+    state = recargar_desde_disco(state)
     ordenadas =
       state.necesidades
       |> Map.values()
@@ -133,6 +130,7 @@ defmodule SistemaEmergencia.ServidorInventario do
 
   @impl true
   def handle_call({:asignar_recurso, nec_id, criterio_rec, cant, user}, _from, state) do
+    state = recargar_desde_disco(state)
     case ejecutar_asignacion_atomica(state, nec_id, criterio_rec, cant) do
       {:ok, res, nuevo_state} ->
         Persistencia.guardar_coleccion(@archivo_recursos, nuevo_state.recursos)
@@ -146,6 +144,7 @@ defmodule SistemaEmergencia.ServidorInventario do
 
   @impl true
   def handle_call({:registrar_albergue, cod, nom, zona, cap, user}, _from, state) do
+    state = recargar_desde_disco(state)
     case construir_albergue(state.albergues, cod, nom, zona, cap) do
       {:ok, albergue, nuevos_alb} ->
         persistir_y_auditar(@archivo_albergues, nuevos_alb, user, "register_shelter", "#{cod} cap=#{cap}")
@@ -158,6 +157,7 @@ defmodule SistemaEmergencia.ServidorInventario do
 
   @impl true
   def handle_call({:consultar_albergue, codigo}, _from, state) do
+    state = recargar_desde_disco(state)
     case Map.get(state.albergues, codigo) do
       nil -> {:reply, {:error, :albergue_no_encontrado}, state}
       %Albergue{} = a -> {:reply, {:ok, %{albergue: a, cupos_disponibles: a.capacidad_maxima - a.ocupacion_actual}}, state}
@@ -166,6 +166,7 @@ defmodule SistemaEmergencia.ServidorInventario do
 
   @impl true
   def handle_call({:ingreso_albergue, codigo, doc, user}, _from, state) do
+    state = recargar_desde_disco(state)
     case cambiar_ocupacion_albergue(state.albergues, codigo, doc, :ingreso) do
       {:ok, alb, nuevos_alb} ->
         persistir_y_auditar(@archivo_albergues, nuevos_alb, user, "register_entry", "#{doc} -> #{codigo}")
@@ -178,6 +179,7 @@ defmodule SistemaEmergencia.ServidorInventario do
 
   @impl true
   def handle_call({:salida_albergue, codigo, doc, user}, _from, state) do
+    state = recargar_desde_disco(state)
     case cambiar_ocupacion_albergue(state.albergues, codigo, doc, :salida) do
       {:ok, alb, nuevos_alb} ->
         persistir_y_auditar(@archivo_albergues, nuevos_alb, user, "register_exit", "#{doc} <- #{codigo}")
@@ -190,19 +192,17 @@ defmodule SistemaEmergencia.ServidorInventario do
 
   @impl true
   def handle_call(:reporte_albergues, _from, state) do
+    state = recargar_desde_disco(state)
     ordenados = Enum.sort_by(Map.values(state.albergues), &porcentaje_ocupacion/1, :desc)
     {:reply, ordenados, state}
   end
 
   @impl true
   def handle_call({:recursos_criticos, umbral}, _from, state) do
+    state = recargar_desde_disco(state)
     criticos = Recursividad.filtrar_recursivo(Map.values(state.recursos), &(&1.cantidad <= umbral))
     {:reply, criticos, state}
   end
-
-  # ===========================================================================
-  # 3. FUNCIONES PRIVADAS CORTAS DE LÓGICA PURA (defp)
-  # ===========================================================================
 
   defp construir_o_sumar_recurso(recursos, codigo, nombre, categoria, cantidad, unidad, ubicacion) do
     with {:ok, cod} <- Modelos.validar_id(codigo),
@@ -311,6 +311,13 @@ defmodule SistemaEmergencia.ServidorInventario do
   defp persistir_y_auditar(archivo, datos, usuario, accion, detalle) do
     Persistencia.guardar_coleccion(archivo, datos)
     ProcesoAuditoria.registrar_evento(usuario, accion, detalle)
+  end
+
+  defp recargar_desde_disco(state) do
+    recursos = Persistencia.cargar_coleccion(@archivo_recursos, & &1.codigo)
+    necesidades = Persistencia.cargar_coleccion(@archivo_necesidades, & &1.id)
+    albergues = Persistencia.cargar_coleccion(@archivo_albergues, & &1.codigo)
+    %{state | recursos: recursos, necesidades: necesidades, albergues: albergues, contador_nec: map_size(necesidades) + 1}
   end
 
   defp generar_id_necesidad(id, _) when is_binary(id) and byte_size(id) > 0, do: id

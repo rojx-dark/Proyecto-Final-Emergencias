@@ -1,1 +1,0 @@
-%SistemaEmergencia.Modelos.Persona{id: "PER_1094", documento: "1094", nombre: "Andres", edad: 30, zona: "zona_norte", estado: :localizada, historial_estados: [{"2026-11-11 19:26:59", :ninguno, :localizada}]}

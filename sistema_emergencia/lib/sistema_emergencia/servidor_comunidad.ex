@@ -49,6 +49,9 @@ defmodule SistemaEmergencia.ServidorComunidad do
   def listar_mensajes_familiares(doc_dest),
     do: GenServer.call(__MODULE__, {:listar_mensajes, doc_dest})
 
+  def todos_los_mensajes,
+    do: GenServer.call(__MODULE__, :todos_los_mensajes)
+
   def marcar_mensaje_entregado(id_mensaje),
     do: GenServer.call(__MODULE__, {:marcar_mensaje_entregado, id_mensaje})
 
@@ -86,6 +89,7 @@ defmodule SistemaEmergencia.ServidorComunidad do
 
   @impl true
   def handle_call({:conectar, user, pass, rol, zona}, _from, state) do
+    state = recargar_desde_disco(state)
     case autenticar_o_registrar(state.usuarios, user, pass, rol, zona) do
       {:ok, modo, usuario, nuevos_usuarios} ->
         persistir_y_auditar(@archivo_usuarios, nuevos_usuarios, usuario.username, "connect", "#{modo}")
@@ -98,6 +102,7 @@ defmodule SistemaEmergencia.ServidorComunidad do
 
   @impl true
   def handle_call({:desconectar, username}, _from, state) do
+    state = recargar_desde_disco(state)
     target = username || (state.usuario_sesion && state.usuario_sesion.username)
 
     case cerrar_sesion_usuario(state.usuarios, target) do
@@ -115,11 +120,13 @@ defmodule SistemaEmergencia.ServidorComunidad do
 
   @impl true
   def handle_call({:buscar_usuario, username}, _from, state) do
+    state = recargar_desde_disco(state)
     {:reply, Map.get(state.usuarios, String.trim(to_string(username))), state}
   end
 
   @impl true
   def handle_call({:registrar_zona, cod, nom, niv, afec}, _from, state) do
+    state = recargar_desde_disco(state)
     case construir_zona(state.zonas, cod, nom, niv, afec) do
       {:ok, zona, nuevas_zonas} ->
         persistir_y_auditar(@archivo_zonas, nuevas_zonas, sesion(state), "register_zone", "#{cod} (#{niv})")
@@ -132,6 +139,7 @@ defmodule SistemaEmergencia.ServidorComunidad do
 
   @impl true
   def handle_call({:agregar_sector, cod_zona, id_sec, nom_sec, afec, puntos}, _from, state) do
+    state = recargar_desde_disco(state)
     case anexar_sector(state.zonas, cod_zona, id_sec, nom_sec, afec, puntos) do
       {:ok, zona_act, nuevas_zonas} ->
         Persistencia.guardar_coleccion(@archivo_zonas, nuevas_zonas)
@@ -144,6 +152,7 @@ defmodule SistemaEmergencia.ServidorComunidad do
 
   @impl true
   def handle_call({:consultar_zona, cod_zona}, _from, state) do
+    state = recargar_desde_disco(state)
     case Map.get(state.zonas, cod_zona) do
       nil -> {:reply, {:error, :zona_no_encontrada}, state}
       %Zona{} = z -> {:reply, {:ok, %{zona: z, estadisticas: Recursividad.estadisticas_zona(z)}}, state}
@@ -151,10 +160,14 @@ defmodule SistemaEmergencia.ServidorComunidad do
   end
 
   @impl true
-  def handle_call(:listar_zonas, _from, state), do: {:reply, Map.values(state.zonas), state}
+  def handle_call(:listar_zonas, _from, state) do
+    state = recargar_desde_disco(state)
+    {:reply, Map.values(state.zonas), state}
+  end
 
   @impl true
   def handle_call({:reportar_persona, doc, nom, zona, est, edad}, _from, state) do
+    state = recargar_desde_disco(state)
     case guardar_o_actualizar_persona(state.personas, doc, nom, zona, est, edad) do
       {:ok, persona, nuevas_personas} ->
         persistir_y_auditar(@archivo_personas, nuevas_personas, sesion(state), "report_person", "#{doc} -> #{est}")
@@ -167,14 +180,19 @@ defmodule SistemaEmergencia.ServidorComunidad do
 
   @impl true
   def handle_call({:buscar_persona, criterio}, _from, state) do
+    state = recargar_desde_disco(state)
     {:reply, filtrar_personas(Map.values(state.personas), criterio), state}
   end
 
   @impl true
-  def handle_call(:listar_personas, _from, state), do: {:reply, Map.values(state.personas), state}
+  def handle_call(:listar_personas, _from, state) do
+    state = recargar_desde_disco(state)
+    {:reply, Map.values(state.personas), state}
+  end
 
   @impl true
   def handle_call({:enviar_mensaje, doc_dest, contenido, remitente}, _from, state) do
+    state = recargar_desde_disco(state)
     case construir_mensaje(state.mensajes, doc_dest, contenido, remitente) do
       {:ok, msg, nuevos_msgs} ->
         persistir_y_auditar(@archivo_mensajes, nuevos_msgs, sesion(state), "send_family_message", "Para #{doc_dest}")
@@ -187,12 +205,20 @@ defmodule SistemaEmergencia.ServidorComunidad do
 
   @impl true
   def handle_call({:listar_mensajes, doc_dest}, _from, state) do
+    state = recargar_desde_disco(state)
     lista = Recursividad.filtrar_recursivo(Map.values(state.mensajes), &(&1.documento_destinatario == doc_dest))
     {:reply, lista, state}
   end
 
   @impl true
+  def handle_call(:todos_los_mensajes, _from, state) do
+    state = recargar_desde_disco(state)
+    {:reply, state.mensajes, state}
+  end
+
+  @impl true
   def handle_call({:marcar_mensaje_entregado, id_msg}, _from, state) do
+    state = recargar_desde_disco(state)
     case Map.get(state.mensajes, id_msg) do
       nil ->
         {:reply, {:error, :mensaje_no_encontrado}, state}
@@ -207,6 +233,7 @@ defmodule SistemaEmergencia.ServidorComunidad do
 
   @impl true
   def handle_call({:reportar_mascota, tipo, esp, nom, col, tam, zona, cont, caract}, _from, state) do
+    state = recargar_desde_disco(state)
     case construir_reporte_mascota(state.mascotas, tipo, esp, nom, col, tam, zona, cont, caract) do
       {:ok, rep, nuevas_mascotas} ->
         persistir_y_auditar(@archivo_mascotas, nuevas_mascotas, sesion(state), "report_pet", "#{rep.id} (#{rep.tipo})")
@@ -219,6 +246,7 @@ defmodule SistemaEmergencia.ServidorComunidad do
 
   @impl true
   def handle_call(:match_pets, _from, state) do
+    state = recargar_desde_disco(state)
     todas = Map.values(state.mascotas)
     perdidas = Recursividad.filtrar_recursivo(todas, &(&1.tipo == :perdida))
     encontradas = Recursividad.filtrar_recursivo(todas, &(&1.tipo == :encontrada))
@@ -227,6 +255,7 @@ defmodule SistemaEmergencia.ServidorComunidad do
 
   @impl true
   def handle_call({:confirmar_match, p_id, e_id}, _from, state) do
+    state = recargar_desde_disco(state)
     case cerrar_pareja_mascotas(state.mascotas, p_id, e_id) do
       {:ok, pareja, nuevas_mascotas} ->
         persistir_y_auditar(@archivo_mascotas, nuevas_mascotas, sesion(state), "confirm_pet_match", "#{p_id}<->#{e_id}")
@@ -239,6 +268,7 @@ defmodule SistemaEmergencia.ServidorComunidad do
 
   @impl true
   def handle_call({:listar_mascotas, filtros}, _from, state) do
+    state = recargar_desde_disco(state)
     {:reply, filtrar_mascotas(Map.values(state.mascotas), filtros), state}
   end
 
@@ -353,6 +383,17 @@ defmodule SistemaEmergencia.ServidorComunidad do
   defp persistir_y_auditar(archivo, datos, usuario, accion, detalle) do
     Persistencia.guardar_coleccion(archivo, datos)
     ProcesoAuditoria.registrar_evento(usuario, accion, detalle)
+  end
+
+  defp recargar_desde_disco(state) do
+    %{
+      state
+      | usuarios: Persistencia.cargar_coleccion(@archivo_usuarios, & &1.username),
+        zonas: Persistencia.cargar_coleccion(@archivo_zonas, & &1.codigo),
+        personas: Persistencia.cargar_coleccion(@archivo_personas, & &1.documento),
+        mensajes: Persistencia.cargar_coleccion(@archivo_mensajes, & &1.id),
+        mascotas: Persistencia.cargar_coleccion(@archivo_mascotas, & &1.id)
+    }
   end
 
   defp sesion(%{usuario_sesion: %Usuario{username: u}}), do: u

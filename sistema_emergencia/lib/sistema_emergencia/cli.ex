@@ -8,9 +8,6 @@ defmodule SistemaEmergencia.CLI do
   alias SistemaEmergencia.{Modelos, ServidorInventario, ServidorComunidad, ProcesoAuditoria}
   alias SistemaEmergencia.Modelos.Usuario
 
-  # ===========================================================================
-  # 1. MENÚ PRINCIPAL DE ACCESO (LOGIN / REGISTRO AUTOMÁTICO)
-  # ===========================================================================
 
   @doc "Inicia el sistema interactivo por menús numerados."
   def iniciar_consola do
@@ -18,9 +15,7 @@ defmodule SistemaEmergencia.CLI do
   end
 
   defp loop_acceso do
-    IO.puts("\n==============================================================")
     IO.puts("   SISTEMA DISTRIBUIDO DE GESTIÓN DE EMERGENCIAS (ELIXIR)     ")
-    IO.puts("==============================================================")
     IO.puts("  1. Ingresar / Registrarse (Correo o Usuario y Contraseña)")
     IO.puts("  2. Ejecutar Flujo de Ejemplo del PDF (Demostración)")
     IO.puts("  3. Simular Conflicto Concurrente (2 procesos pidiendo agua)")
@@ -71,7 +66,9 @@ defmodule SistemaEmergencia.CLI do
         case ServidorComunidad.conectar_usuario(identificador, password, rol, zona) do
           {:ok, :registrado_y_conectado, %Usuario{} = u} ->
             IO.puts("\n[OK] ¡Cuenta creada y conectada exitosamente como #{u.rol}!")
+            pid_monitor = iniciar_monitor_tiempo_real(u)
             loop_menu_usuario(u)
+            detener_monitor_tiempo_real(pid_monitor)
 
           {:error, motivo} ->
             IO.puts("\n[ERROR] No se pudo registrar: #{inspect(motivo)}")
@@ -81,7 +78,9 @@ defmodule SistemaEmergencia.CLI do
         case ServidorComunidad.conectar_usuario(identificador, password) do
           {:ok, :conectado, %Usuario{} = u} ->
             IO.puts("\n[OK] ¡Bienvenido de nuevo, #{u.username} (Rol: #{u.rol} | Zona: #{u.zona})!")
+            pid_monitor = iniciar_monitor_tiempo_real(u)
             loop_menu_usuario(u)
+            detener_monitor_tiempo_real(pid_monitor)
 
           {:error, :credenciales_invalidas} ->
             IO.puts("\n[ERROR] Contraseña incorrecta para el usuario '#{identificador}'.")
@@ -107,10 +106,6 @@ defmodule SistemaEmergencia.CLI do
       _ -> :ciudadano
     end
   end
-
-  # ===========================================================================
-  # 2. MENÚS PERSONALIZADOS SEGÚN EL ROL DEL USUARIO
-  # ===========================================================================
 
   defp loop_menu_usuario(%Usuario{rol: :ciudadano} = u) do
     IO.puts("\n==============================================================")
@@ -156,6 +151,8 @@ defmodule SistemaEmergencia.CLI do
     IO.puts("  8. Consultar cupos de un albergue")
     IO.puts("  9. Reportar mascota perdida o encontrada")
     IO.puts("  10. Buscar coincidencias de mascotas (match_pets)")
+    IO.puts("  11. Enviar mensaje a persona / familiar")
+    IO.puts("  12. Consultar mensajes y marcar como ENTREGADO")
     IO.puts("  0. Cerrar sesión (disconnect)")
 
     case pedir("Seleccione una acción") do
@@ -169,6 +166,8 @@ defmodule SistemaEmergencia.CLI do
       "8" -> ui_consultar_albergue(); loop_menu_usuario(u)
       "9" -> ui_reportar_mascota(); loop_menu_usuario(u)
       "10" -> ui_match_mascotas(); loop_menu_usuario(u)
+      "11" -> ui_enviar_mensaje(u); loop_menu_usuario(u)
+      "12" -> ui_listar_mensajes(); loop_menu_usuario(u)
       "0" -> cerrar_sesion(u)
       _ -> IO.puts("[!] Opción inválida."); loop_menu_usuario(u)
     end
@@ -226,9 +225,6 @@ defmodule SistemaEmergencia.CLI do
     IO.puts("\n[OK] Sesión cerrada para #{u.username}.")
   end
 
-  # ===========================================================================
-  # 3. FORMULARIOS INTERACTIVOS PASO A PASO (UI)
-  # ===========================================================================
 
   defp ui_registrar_zona do
     codigo = pedir("Código de la zona (ej. Z01, centro)")
@@ -315,14 +311,45 @@ defmodule SistemaEmergencia.CLI do
   end
 
   defp ui_enviar_mensaje(u) do
-    doc = pedir("Documento del familiar destinatario")
+    doc = pedir("Documento o usuario del destinatario")
     msg = pedir("Contenido del mensaje")
-    IO.inspect(ServidorComunidad.enviar_mensaje_familiar(doc, msg, u.username), label: "Mensaje Enviado")
+    case ServidorComunidad.enviar_mensaje_familiar(doc, msg, u.username) do
+      {:ok, m} ->
+        IO.puts("\n[OK] Mensaje #{m.id} enviado en tiempo real a '#{m.documento_destinatario}' (Estado: #{m.estado}).")
+      err ->
+        IO.inspect(err, label: "Error")
+    end
   end
 
   defp ui_listar_mensajes do
-    doc = pedir("Documento de la persona para ver sus mensajes")
-    IO.inspect(ServidorComunidad.listar_mensajes_familiares(doc), label: "Mensajes")
+    doc = pedir("Documento o usuario para consultar sus mensajes (Enter para ver TODOS)")
+    mensajes =
+      if doc == "" do
+        ServidorComunidad.todos_los_mensajes() |> Map.values()
+      else
+        ServidorComunidad.listar_mensajes_familiares(doc)
+      end
+
+    if mensajes == [] do
+      IO.puts("\n[*] No hay mensajes registrados para ese criterio.")
+    else
+      IO.puts("\n--- BANDEJA DE MENSAJES EN TIEMPO REAL ---")
+      Enum.each(mensajes, fn m ->
+        icono = if m.estado == :entregado, do: "✅ [ENTREGADO]", else: "⏳ [PENDIENTE]"
+        IO.puts("  #{icono} ID: #{m.id} | Para: #{m.documento_destinatario} | De: #{m.remitente} | Fecha: #{m.fecha}")
+        IO.puts("     Mensaje: \"#{m.contenido}\"")
+      end)
+
+      id_marcar = pedir("\n¿Desea marcar algún mensaje como ENTREGADO? Escriba el ID (ej. MSG_1) o Enter para omitir")
+      if id_marcar != "" do
+        case ServidorComunidad.marcar_mensaje_entregado(id_marcar) do
+          {:ok, act} ->
+            IO.puts("\n[OK] ✅ El mensaje #{act.id} fue marcado como :entregado en tiempo real.")
+          err ->
+            IO.inspect(err, label: "No se pudo actualizar")
+        end
+      end
+    end
   end
 
   defp ui_reportar_mascota do
@@ -376,14 +403,12 @@ defmodule SistemaEmergencia.CLI do
   end
 
   defp ui_submenu_familia(u) do
-    IO.puts("  a) Reportar persona  |  b) Buscar persona  |  c) Enviar mensaje  |  d) Marcar mensaje entregado")
+    IO.puts("  a) Reportar persona  |  b) Buscar persona  |  c) Enviar mensaje  |  d) Ver bandeja y marcar ENTREGADO")
     case pedir("Opción") do
       "a" -> ui_reportar_persona()
       "b" -> ui_buscar_persona()
       "c" -> ui_enviar_mensaje(u)
-      "d" ->
-        id_m = pedir("ID del mensaje (ej. MSG_1)")
-        IO.inspect(ServidorComunidad.marcar_mensaje_entregado(id_m), label: "Mensaje")
+      "d" -> ui_listar_mensajes()
       _ -> :ok
     end
   end
@@ -411,10 +436,6 @@ defmodule SistemaEmergencia.CLI do
       :error -> 0
     end
   end
-
-  # ===========================================================================
-  # 4. INTÉRPRETE DE COMANDOS DE REFERENCIA (Sección 1.4.10 del PDF)
-  # ===========================================================================
 
   @doc """
   Recibe una cadena de texto con cualquiera de los comandos de la página 6 del PDF,
@@ -572,10 +593,6 @@ defmodule SistemaEmergencia.CLI do
     {:error, {:comando_no_reconocido, otro}}
   end
 
-  # ===========================================================================
-  # 5. RESUMEN GLOBAL Y SIMULACIÓN DEL FLUJO DE EJEMPLO (Página 7 del PDF)
-  # ===========================================================================
-
   @doc "Genera el resumen global del estado de la emergencia (comando `summary`)."
   def resumen_global do
     %{
@@ -695,5 +712,48 @@ defmodule SistemaEmergencia.CLI do
           error -> error
         end
     end
+  end
+
+  defp iniciar_monitor_tiempo_real(%Usuario{} = usuario) do
+    mensajes_iniciales = ServidorComunidad.todos_los_mensajes()
+    spawn(fn -> loop_monitor_mensajes(usuario, mensajes_iniciales) end)
+  end
+
+  defp detener_monitor_tiempo_real(pid) when is_pid(pid) do
+    send(pid, :detener)
+  end
+
+  defp loop_monitor_mensajes(usuario, conocidos) do
+    receive do
+      :detener -> :ok
+    after
+      1_200 ->
+        actuales = ServidorComunidad.todos_los_mensajes()
+        notificar_cambios_mensajes(usuario, conocidos, actuales)
+        loop_monitor_mensajes(usuario, actuales)
+    end
+  end
+
+  defp notificar_cambios_mensajes(usuario, conocidos, actuales) do
+    Enum.each(actuales, fn {id, msg} ->
+      case Map.get(conocidos, id) do
+        nil ->
+          if msg.remitente != usuario.username do
+            IO.puts(
+              "\n\n🔔 [NOTIFICACIÓN EN TIEMPO REAL - #{usuario.username}] " <>
+                "Nuevo mensaje #{msg.id} de '#{msg.remitente}' para '#{msg.documento_destinatario}': " <>
+                "\"#{msg.contenido}\" (Estado: :#{msg.estado})"
+            )
+          end
+
+        anterior ->
+          if anterior.estado != msg.estado do
+            IO.puts(
+              "\n\n✅ [ACTUALIZACIÓN EN TIEMPO REAL - #{usuario.username}] " <>
+                "El mensaje #{msg.id} para '#{msg.documento_destinatario}' cambió de estado: :#{anterior.estado} -> :#{msg.estado}"
+            )
+          end
+      end
+    end)
   end
 end

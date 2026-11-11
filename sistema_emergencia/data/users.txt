@@ -1,1 +1,0 @@
-%SistemaEmergencia.Modelos.Usuario{username: "laura", password: "1234", nombre: "laura", rol: :coordinador, zona: "centro", conectado: true}
