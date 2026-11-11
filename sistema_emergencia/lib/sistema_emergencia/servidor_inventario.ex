@@ -233,7 +233,7 @@ defmodule SistemaEmergencia.ServidorInventario do
   end
 
   defp construir_necesidad(necesidades, id, tipo, cantidad, prioridad, zona, desc, resp) do
-    with false <- Map.has_key?(necesidades, id) || {:error, :id_necesidad_duplicado},
+    with true <- not Map.has_key?(necesidades, id) || {:error, :id_necesidad_duplicado},
          {:ok, cant} <- Modelos.validar_cantidad_positiva(cantidad),
          {:ok, prio} <- Modelos.validar_prioridad(prioridad) do
       nueva = %Necesidad{id: id, tipo: norm(tipo), descripcion: desc, cantidad: cant, cantidad_asignada: 0, zona: zona, prioridad: prio, responsable: resp}
@@ -258,7 +258,7 @@ defmodule SistemaEmergencia.ServidorInventario do
 
   defp construir_albergue(albergues, codigo, nombre, zona, capacidad) do
     with {:ok, cod} <- Modelos.validar_id(codigo),
-         false <- Map.has_key?(albergues, cod) || {:error, :albergue_ya_existe},
+         true <- not Map.has_key?(albergues, cod) || {:error, :albergue_ya_existe},
          {:ok, cap} <- Modelos.validar_cantidad_positiva(capacidad) do
       alb = %Albergue{codigo: cod, nombre: nombre, zona: zona, capacidad_maxima: cap}
       {:ok, alb, Map.put(albergues, cod, alb)}
@@ -267,7 +267,7 @@ defmodule SistemaEmergencia.ServidorInventario do
 
   defp cambiar_ocupacion_albergue(albergues, codigo, doc, :ingreso) do
     with %Albergue{} = a <- Map.get(albergues, codigo) || {:error, :albergue_no_encontrado},
-         false <- MapSet.member?(a.personas_alojadas, doc) || {:error, :persona_ya_en_albergue},
+         true <- not MapSet.member?(a.personas_alojadas, doc) || {:error, :persona_ya_en_albergue},
          true <- a.ocupacion_actual < a.capacidad_maxima || {:error, :capacidad_maxima_superada} do
       act = %Albergue{a | ocupacion_actual: a.ocupacion_actual + 1, personas_alojadas: MapSet.put(a.personas_alojadas, doc)}
       {:ok, act, Map.put(albergues, codigo, act)}
