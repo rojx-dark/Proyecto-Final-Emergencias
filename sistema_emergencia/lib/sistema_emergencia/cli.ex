@@ -4,7 +4,7 @@ defmodule SistemaEmergencia.CLI do
   Flujo de Ejemplo y Conflicto Concurrente.
   """
 
-  alias SistemaEmergencia.{ServidorInventario, ServidorComunidad, ProcesoAuditoria}
+  alias SistemaEmergencia.{Modelos, ServidorInventario, ServidorComunidad, ProcesoAuditoria}
 
 
   @doc "Inicia un bucle interactivo de consola para escribir comandos como en el PDF."
@@ -65,13 +65,22 @@ defmodule SistemaEmergencia.CLI do
 
   # register_zone codigo nombre nivel
   defp despachar(["register_zone", codigo, nombre, nivel]) do
-    ServidorComunidad.registrar_zona(codigo, nombre, String.to_atom(nivel), 100)
+    con_permiso(:registrar_zona, fn ->
+      ServidorComunidad.registrar_zona(codigo, nombre, String.to_atom(nivel), 100)
+    end)
+  end
+
+  # check_zone codigo
+  defp despachar(["check_zone", codigo]) do
+    ServidorComunidad.consultar_zona(codigo)
   end
 
   # register_need tipo cantidad prioridad zona descripcion
   defp despachar(["register_need", tipo, cant_str, prio, zona, desc]) do
-    {cant, _} = Integer.parse(cant_str)
-    ServidorInventario.registrar_necesidad(nil, tipo, cant, String.to_atom(prio), zona, desc, usuario_activo())
+    con_permiso(:registrar_necesidad, fn ->
+      {cant, _} = Integer.parse(cant_str)
+      ServidorInventario.registrar_necesidad(nil, tipo, cant, String.to_atom(prio), zona, desc, usuario_activo())
+    end)
   end
 
   # list_needs o list_needs zona=centro prioridad=critica
@@ -82,29 +91,38 @@ defmodule SistemaEmergencia.CLI do
 
   # assign_resource need001 agua 20
   defp despachar(["assign_resource", need_id, recurso, cant_str]) do
-    {cant, _} = Integer.parse(cant_str)
-    ServidorInventario.asignar_recurso(need_id, recurso, cant, usuario_activo())
+    con_permiso(:asignar_recurso, fn ->
+      {cant, _} = Integer.parse(cant_str)
+      ServidorInventario.asignar_recurso(need_id, recurso, cant, usuario_activo())
+    end)
   end
 
   # register_resource R001 agua 200 litros centro_acopio_1
   defp despachar(["register_resource", codigo, nombre, cant_str, unidad, ubicacion]) do
-    {cant, _} = Integer.parse(cant_str)
-    ServidorInventario.registrar_recurso(codigo, nombre, "vital", cant, unidad, ubicacion, usuario_activo())
+    con_permiso(:registrar_recurso, fn ->
+      {cant, _} = Integer.parse(cant_str)
+      ServidorInventario.registrar_recurso(codigo, nombre, "vital", cant, unidad, ubicacion, usuario_activo())
+    end)
   end
 
-  defp despachar(["list_resources"]) do
-    ServidorInventario.listar_recursos()
+  defp despachar(["list_resources" | filtros_raw]) do
+    filtros = parsear_filtros(filtros_raw)
+    ServidorInventario.listar_recursos(filtros)
   end
 
   # transfer_resource R001 centro_acopio_1 albergue_2 30
   defp despachar(["transfer_resource", codigo, origen, destino, cant_str]) do
-    {cant, _} = Integer.parse(cant_str)
-    ServidorInventario.transferir_recurso(codigo, origen, destino, cant, usuario_activo())
+    con_permiso(:transferir_recurso, fn ->
+      {cant, _} = Integer.parse(cant_str)
+      ServidorInventario.transferir_recurso(codigo, origen, destino, cant, usuario_activo())
+    end)
   end
 
   # report_person documento nombre zona estado
   defp despachar(["report_person", doc, nombre, zona, estado]) do
-    ServidorComunidad.reportar_persona(doc, nombre, zona, String.to_atom(estado))
+    con_permiso(:reportar_persona, fn ->
+      ServidorComunidad.reportar_persona(doc, nombre, zona, String.to_atom(estado))
+    end)
   end
 
   # find_person documento
@@ -114,7 +132,9 @@ defmodule SistemaEmergencia.CLI do
 
   # send_family_message documento "Estoy bien, estoy en el albergue norte"
   defp despachar(["send_family_message", doc, mensaje]) do
-    ServidorComunidad.enviar_mensaje_familiar(doc, mensaje, usuario_activo())
+    con_permiso(:enviar_mensaje, fn ->
+      ServidorComunidad.enviar_mensaje_familiar(doc, mensaje, usuario_activo())
+    end)
   end
 
   # list_family_messages documento
@@ -122,31 +142,58 @@ defmodule SistemaEmergencia.CLI do
     ServidorComunidad.listar_mensajes_familiares(doc)
   end
 
+  # deliver_message MSG_1
+  defp despachar(["deliver_message", id_mensaje]) do
+    ServidorComunidad.marcar_mensaje_entregado(id_mensaje)
+  end
+
   # report_pet lost perro "Luna" negra mediana zona_norte contacto
   defp despachar(["report_pet", tipo, especie, nombre, color, tamano, zona, contacto]) do
-    ServidorComunidad.reportar_mascota(tipo, especie, nombre, color, tamano, zona, contacto, [color, tamano])
+    con_permiso(:reportar_mascota, fn ->
+      ServidorComunidad.reportar_mascota(tipo, especie, nombre, color, tamano, zona, contacto, [color, tamano])
+    end)
+  end
+
+  defp despachar(["list_pets" | filtros_raw]) do
+    filtros = parsear_filtros(filtros_raw)
+    ServidorComunidad.listar_mascotas(filtros)
   end
 
   defp despachar(["match_pets"]) do
     ServidorComunidad.buscar_coincidencias_mascotas()
   end
 
+  # confirm_pet_match PET_001 PET_002
+  defp despachar(["confirm_pet_match", perdida_id, encontrada_id]) do
+    ServidorComunidad.confirmar_coincidencia_mascota(perdida_id, encontrada_id)
+  end
+
   # register_shelter A01 "Albergue Norte" zona_norte 150
   defp despachar(["register_shelter", codigo, nombre, zona, cap_str]) do
-    {cap, _} = Integer.parse(cap_str)
-    ServidorInventario.registrar_albergue(codigo, nombre, zona, cap, usuario_activo())
+    con_permiso(:registrar_albergue, fn ->
+      {cap, _} = Integer.parse(cap_str)
+      ServidorInventario.registrar_albergue(codigo, nombre, zona, cap, usuario_activo())
+    end)
   end
 
   defp despachar(["check_shelter", codigo]) do
     ServidorInventario.consultar_albergue(codigo)
   end
 
+  defp despachar(["shelter_report"]) do
+    ServidorInventario.reporte_albergues_mayor_ocupacion()
+  end
+
   defp despachar(["register_entry", codigo, doc]) do
-    ServidorInventario.registrar_ingreso_albergue(codigo, doc, usuario_activo())
+    con_permiso(:ingreso_albergue, fn ->
+      ServidorInventario.registrar_ingreso_albergue(codigo, doc, usuario_activo())
+    end)
   end
 
   defp despachar(["register_exit", codigo, doc]) do
-    ServidorInventario.registrar_salida_albergue(codigo, doc, usuario_activo())
+    con_permiso(:ingreso_albergue, fn ->
+      ServidorInventario.registrar_salida_albergue(codigo, doc, usuario_activo())
+    end)
   end
 
   defp despachar(["critical_resources"]) do
@@ -270,6 +317,19 @@ defmodule SistemaEmergencia.CLI do
     case ServidorComunidad.usuario_actual() do
       %{username: u} -> u
       _ -> "anonimo"
+    end
+  end
+
+  defp con_permiso(accion, fun) do
+    case ServidorComunidad.usuario_actual() do
+      nil ->
+        fun.()
+
+      usuario ->
+        case Modelos.autorizar_accion(usuario, accion) do
+          :ok -> fun.()
+          error -> error
+        end
     end
   end
 end
