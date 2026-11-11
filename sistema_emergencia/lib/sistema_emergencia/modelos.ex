@@ -3,12 +3,11 @@ defmodule SistemaEmergencia.Modelos do
   Capa de Dominio: Define todas las estructuras inmutables (Structs),
   tipos válidos y funciones puras de validación.
   """
-  # ===========================================================================
-  # 1. ESTRUCTURAS DE DATOS (STRUCTS)
-  # ===========================================================================
+
   defmodule Usuario do
     defstruct [:username, :password, :nombre, :rol, :zona, conectado: false]
   end
+  
   # Jerarquía anidada: Zona -> Sectores -> Puntos de Atención (Requisito 1.4.3)
   defmodule PuntoAtencion do
     defstruct [:id, :nombre, :capacidad]
