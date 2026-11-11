@@ -1,20 +1,24 @@
 defmodule SistemaEmergencia.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
-  @moduledoc false
+  @moduledoc """
+  Árbol de Supervisión Principal (OTP Tree - Requisito 1.8).
+  Supervisa bajo estrategia `:one_for_one`:
+    1. `ProcesoAuditoria` (Proceso independiente nativo con receive loop)
+    2. `ServidorInventario` (GenServer de Recursos, Necesidades y Albergues)
+    3. `ServidorComunidad` (GenServer de Usuarios, Zonas, Personas y Mascotas)
+  """
 
   use Application
 
   @impl true
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: SistemaEmergencia.Worker.start_link(arg)
-      # {SistemaEmergencia.Worker, arg}
+      SistemaEmergencia.ProcesoAuditoria,
+      SistemaEmergencia.ServidorInventario,
+      SistemaEmergencia.ServidorComunidad
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: SistemaEmergencia.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end
+
