@@ -15,6 +15,9 @@ defmodule SistemaEmergencia do
   @doc "Demuestra el conflicto concurrente entre múltiples procesos sobre un mismo recurso."
   def conflicto, do: CLI.simular_conflicto_concurrente()
 
-  @doc "Abre la consola interactiva de comandos."
+  @doc "Abre el menú interactivo con login/registro y vistas según el rol del usuario."
+  def menu, do: CLI.iniciar_consola()
+
+  @doc "Abre la consola interactiva."
   def consola, do: CLI.iniciar_consola()
 end

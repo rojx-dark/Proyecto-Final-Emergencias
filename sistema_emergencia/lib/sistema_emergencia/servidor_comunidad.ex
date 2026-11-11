@@ -20,6 +20,9 @@ defmodule SistemaEmergencia.ServidorComunidad do
   def conectar_usuario(username, password, rol \\ :ciudadano, zona \\ "general"),
     do: GenServer.call(__MODULE__, {:conectar, username, password, rol, zona})
 
+  def buscar_usuario(username),
+    do: GenServer.call(__MODULE__, {:buscar_usuario, username})
+
   def desconectar_usuario(username \\ nil),
     do: GenServer.call(__MODULE__, {:desconectar, username})
 
@@ -109,6 +112,11 @@ defmodule SistemaEmergencia.ServidorComunidad do
 
   @impl true
   def handle_call(:usuario_actual, _from, state), do: {:reply, state.usuario_sesion, state}
+
+  @impl true
+  def handle_call({:buscar_usuario, username}, _from, state) do
+    {:reply, Map.get(state.usuarios, String.trim(to_string(username))), state}
+  end
 
   @impl true
   def handle_call({:registrar_zona, cod, nom, niv, afec}, _from, state) do

@@ -1,0 +1,2 @@
+%SistemaEmergencia.Modelos.ReporteMascota{id: "PET_001", tipo: :perdida, especie: "perro", nombre: "Luna", color: "negra", tamano: "mediana", caracteristicas: MapSet.new(["mediana", "negra"]), zona: "zona_norte", contacto: "3001112233", estado: :activa, pareja_id: nil}
+%SistemaEmergencia.Modelos.ReporteMascota{id: "PET_002", tipo: :encontrada, especie: "perro", nombre: "desconocido", color: "negra", tamano: "mediana", caracteristicas: MapSet.new(["mediana", "negra"]), zona: "zona_norte", contacto: "3109998877", estado: :activa, pareja_id: nil}

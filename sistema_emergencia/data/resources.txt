@@ -1,0 +1,1 @@
+%SistemaEmergencia.Modelos.Recurso{codigo: "R001", nombre: "agua", categoria: "vital", cantidad: 20, unidad: "litros", ubicacion: "centro_acopio_1", historial: [{"2026-11-11 19:26:59", :asignacion, 30, "A N001"}, {"2026-11-11 19:26:59", :entrada, 50, "Ingreso en centro_acopio_1"}]}

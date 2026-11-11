@@ -1,0 +1,2 @@
+%SistemaEmergencia.Modelos.Necesidad{id: "N001", tipo: "agua", descripcion: "Punto de atencion sector 3", cantidad: 30, cantidad_asignada: 30, zona: "centro", prioridad: :critica, responsable: "laura", estado: :atendida}
+%SistemaEmergencia.Modelos.Necesidad{id: "N002", tipo: "agua", descripcion: "Punto de apoyo sector 1", cantidad: 25, cantidad_asignada: 0, zona: "centro", prioridad: :alta, responsable: "laura", estado: :pendiente}

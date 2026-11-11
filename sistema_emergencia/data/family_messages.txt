@@ -1,0 +1,1 @@
+%SistemaEmergencia.Modelos.MensajeFamiliar{id: "MSG_1", documento_destinatario: "1094", remitente: "laura", contenido: "Estoy bien, estoy en el albergue norte", fecha: "2026-11-11 19:26:59", estado: :pendiente}

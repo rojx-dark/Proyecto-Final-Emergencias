@@ -1,0 +1,1 @@
+%SistemaEmergencia.Modelos.Albergue{codigo: "A01", nombre: "Albergue Norte", zona: "zona_norte", capacidad_maxima: 150, ocupacion_actual: 1, personas_alojadas: MapSet.new(["1094"]), recursos_ids: MapSet.new([]), necesidades_ids: MapSet.new([])}
