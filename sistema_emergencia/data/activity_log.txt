@@ -93,3 +93,105 @@
 [2026-11-11 19:42:38] USUARIO=sistema | ACCION=register_need | DETalle=N001 (agua)
 [2026-11-11 19:42:38] USUARIO=sistema | ACCION=register_need | DETalle=N002 (agua)
 [2026-11-11 19:42:38] USUARIO=usuario_1 | ACCION=assign_resource | DETalle=30 -> N001
+[2026-11-12 03:22:44] USUARIO=sistema | ACCION=report_pet | DETalle=PET_001 (perdida)
+[2026-11-12 03:22:44] USUARIO=sistema | ACCION=report_pet | DETalle=PET_002 (encontrada)
+[2026-11-12 03:22:44] USUARIO=sistema | ACCION=confirm_pet_match | DETalle=PET_001<->PET_002
+[2026-11-12 03:22:44] USUARIO=sistema | ACCION=register_resource | DETalle=R001 +50
+[2026-11-12 03:22:44] USUARIO=sistema | ACCION=register_need | DETalle=N001 (agua)
+[2026-11-12 03:22:44] USUARIO=sistema | ACCION=register_need | DETalle=N002 (agua)
+[2026-11-12 03:22:44] USUARIO=usuario_1 | ACCION=assign_resource | DETalle=30 -> N001
+[2026-11-12 03:22:44] USUARIO=sistema | ACCION=register_shelter | DETalle=A01 cap=1
+[2026-11-12 03:22:44] USUARIO=sistema | ACCION=register_entry | DETalle=DOC_1 -> A01
+[2026-11-12 03:22:44] USUARIO=laura | ACCION=connect | DETalle=registrado_y_conectado
+[2026-11-12 03:22:44] USUARIO=laura | ACCION=register_zone | DETalle=centro (critico)
+[2026-11-12 03:22:44] USUARIO=laura | ACCION=register_need | DETalle=N001 (agua)
+[2026-11-12 03:22:44] USUARIO=laura | ACCION=register_need | DETalle=N002 (agua)
+[2026-11-12 03:22:44] USUARIO=laura | ACCION=register_resource | DETalle=R001 +50
+[2026-11-12 03:22:44] USUARIO=laura | ACCION=assign_resource | DETalle=30 -> N001
+[2026-11-12 03:22:44] USUARIO=laura | ACCION=register_shelter | DETalle=A01 cap=150
+[2026-11-12 03:22:44] USUARIO=laura | ACCION=report_person | DETalle=1094 -> localizada
+[2026-11-12 03:22:44] USUARIO=laura | ACCION=register_entry | DETalle=1094 -> A01
+[2026-11-12 03:22:44] USUARIO=laura | ACCION=send_family_message | DETalle=Para 1094
+[2026-11-12 03:22:44] USUARIO=laura | ACCION=report_pet | DETalle=PET_001 (perdida)
+[2026-11-12 03:22:44] USUARIO=laura | ACCION=report_pet | DETalle=PET_002 (encontrada)
+[2026-11-12 03:24:23] USUARIO=laura | ACCION=connect | DETalle=registrado_y_conectado
+[2026-11-12 03:24:23] USUARIO=laura | ACCION=register_zone | DETalle=centro (critico)
+[2026-11-12 03:24:23] USUARIO=laura | ACCION=register_need | DETalle=N001 (agua)
+[2026-11-12 03:24:23] USUARIO=laura | ACCION=register_need | DETalle=N002 (agua)
+[2026-11-12 03:24:23] USUARIO=laura | ACCION=register_resource | DETalle=R001 +50
+[2026-11-12 03:24:23] USUARIO=laura | ACCION=assign_resource | DETalle=30 -> N001
+[2026-11-12 03:24:23] USUARIO=laura | ACCION=register_shelter | DETalle=A01 cap=150
+[2026-11-12 03:24:23] USUARIO=laura | ACCION=report_person | DETalle=1094 -> localizada
+[2026-11-12 03:24:23] USUARIO=laura | ACCION=register_entry | DETalle=1094 -> A01
+[2026-11-12 03:24:23] USUARIO=laura | ACCION=send_family_message | DETalle=Para 1094
+[2026-11-12 03:24:23] USUARIO=laura | ACCION=report_pet | DETalle=PET_001 (perdida)
+[2026-11-12 03:24:23] USUARIO=laura | ACCION=report_pet | DETalle=PET_002 (encontrada)
+[2026-11-12 03:24:23] USUARIO=sistema | ACCION=register_resource | DETalle=R001 +50
+[2026-11-12 03:24:23] USUARIO=sistema | ACCION=register_need | DETalle=N001 (agua)
+[2026-11-12 03:24:23] USUARIO=sistema | ACCION=register_need | DETalle=N002 (agua)
+[2026-11-12 03:24:23] USUARIO=usuario_1 | ACCION=assign_resource | DETalle=30 -> N001
+[2026-11-12 03:24:23] USUARIO=sistema | ACCION=report_pet | DETalle=PET_001 (perdida)
+[2026-11-12 03:24:23] USUARIO=sistema | ACCION=report_pet | DETalle=PET_002 (encontrada)
+[2026-11-12 03:24:23] USUARIO=sistema | ACCION=confirm_pet_match | DETalle=PET_001<->PET_002
+[2026-11-12 03:24:23] USUARIO=sistema | ACCION=register_shelter | DETalle=A01 cap=1
+[2026-11-12 03:24:23] USUARIO=sistema | ACCION=register_entry | DETalle=DOC_1 -> A01
+[2026-11-12 03:28:55] USUARIO=laura | ACCION=connect | DETalle=registrado_y_conectado
+[2026-11-12 03:28:55] USUARIO=laura | ACCION=register_zone | DETalle=centro (critico)
+[2026-11-12 03:28:55] USUARIO=laura | ACCION=register_need | DETalle=N001 (agua)
+[2026-11-12 03:28:55] USUARIO=laura | ACCION=register_need | DETalle=N002 (agua)
+[2026-11-12 03:28:55] USUARIO=laura | ACCION=register_resource | DETalle=R001 +50
+[2026-11-12 03:28:55] USUARIO=laura | ACCION=assign_resource | DETalle=30 -> N001
+[2026-11-12 03:28:55] USUARIO=laura | ACCION=register_shelter | DETalle=A01 cap=150
+[2026-11-12 03:28:55] USUARIO=laura | ACCION=report_person | DETalle=1094 -> localizada
+[2026-11-12 03:28:55] USUARIO=laura | ACCION=register_entry | DETalle=1094 -> A01
+[2026-11-12 03:28:55] USUARIO=laura | ACCION=send_family_message | DETalle=Para 1094
+[2026-11-12 03:28:55] USUARIO=laura | ACCION=report_pet | DETalle=PET_001 (perdida)
+[2026-11-12 03:28:55] USUARIO=laura | ACCION=report_pet | DETalle=PET_002 (encontrada)
+[2026-11-12 03:31:12] USUARIO=sistema | ACCION=register_shelter | DETalle=A01 cap=1
+[2026-11-12 03:31:12] USUARIO=sistema | ACCION=register_entry | DETalle=DOC_1 -> A01
+[2026-11-12 03:31:12] USUARIO=laura | ACCION=connect | DETalle=registrado_y_conectado
+[2026-11-12 03:31:12] USUARIO=laura | ACCION=register_zone | DETalle=centro (critico)
+[2026-11-12 03:31:12] USUARIO=laura | ACCION=register_need | DETalle=N001 (agua)
+[2026-11-12 03:31:12] USUARIO=laura | ACCION=register_need | DETalle=N002 (agua)
+[2026-11-12 03:31:12] USUARIO=laura | ACCION=register_resource | DETalle=R001 +50
+[2026-11-12 03:31:12] USUARIO=laura | ACCION=assign_resource | DETalle=30 -> N001
+[2026-11-12 03:31:12] USUARIO=laura | ACCION=register_shelter | DETalle=A01 cap=150
+[2026-11-12 03:31:12] USUARIO=laura | ACCION=report_person | DETalle=1094 -> localizada
+[2026-11-12 03:31:12] USUARIO=laura | ACCION=register_entry | DETalle=1094 -> A01
+[2026-11-12 03:31:12] USUARIO=laura | ACCION=send_family_message | DETalle=Para 1094
+[2026-11-12 03:31:12] USUARIO=laura | ACCION=report_pet | DETalle=PET_001 (perdida)
+[2026-11-12 03:31:12] USUARIO=laura | ACCION=report_pet | DETalle=PET_002 (encontrada)
+[2026-11-12 03:31:12] USUARIO=sistema | ACCION=report_pet | DETalle=PET_001 (perdida)
+[2026-11-12 03:31:12] USUARIO=sistema | ACCION=report_pet | DETalle=PET_002 (encontrada)
+[2026-11-12 03:31:12] USUARIO=sistema | ACCION=confirm_pet_match | DETalle=PET_001<->PET_002
+[2026-11-12 03:31:12] USUARIO=sistema | ACCION=register_resource | DETalle=R001 +50
+[2026-11-12 03:31:12] USUARIO=sistema | ACCION=register_need | DETalle=N001 (agua)
+[2026-11-12 03:31:12] USUARIO=sistema | ACCION=register_need | DETalle=N002 (agua)
+[2026-11-12 03:31:12] USUARIO=usuario_1 | ACCION=assign_resource | DETalle=30 -> N001
+[2026-11-12 03:31:49] USUARIO=sistema | ACCION=report_pet | DETalle=PET_001 (perdida)
+[2026-11-12 03:31:49] USUARIO=sistema | ACCION=report_pet | DETalle=PET_002 (encontrada)
+[2026-11-12 03:31:49] USUARIO=sistema | ACCION=confirm_pet_match | DETalle=PET_001<->PET_002
+[2026-11-12 03:31:49] USUARIO=sistema | ACCION=register_resource | DETalle=R001 +50
+[2026-11-12 03:31:49] USUARIO=sistema | ACCION=register_need | DETalle=N001 (agua)
+[2026-11-12 03:31:49] USUARIO=sistema | ACCION=register_need | DETalle=N002 (agua)
+[2026-11-12 03:31:49] USUARIO=usuario_1 | ACCION=assign_resource | DETalle=30 -> N001
+[2026-11-12 03:31:49] USUARIO=laura | ACCION=connect | DETalle=registrado_y_conectado
+[2026-11-12 03:31:49] USUARIO=laura | ACCION=register_zone | DETalle=centro (critico)
+[2026-11-12 03:31:49] USUARIO=laura | ACCION=register_need | DETalle=N001 (agua)
+[2026-11-12 03:31:49] USUARIO=laura | ACCION=register_need | DETalle=N002 (agua)
+[2026-11-12 03:31:49] USUARIO=laura | ACCION=register_resource | DETalle=R001 +50
+[2026-11-12 03:31:49] USUARIO=laura | ACCION=assign_resource | DETalle=30 -> N001
+[2026-11-12 03:31:49] USUARIO=laura | ACCION=register_shelter | DETalle=A01 cap=150
+[2026-11-12 03:31:49] USUARIO=laura | ACCION=report_person | DETalle=1094 -> localizada
+[2026-11-12 03:31:49] USUARIO=laura | ACCION=register_entry | DETalle=1094 -> A01
+[2026-11-12 03:31:49] USUARIO=laura | ACCION=send_family_message | DETalle=Para 1094
+[2026-11-12 03:31:49] USUARIO=laura | ACCION=report_pet | DETalle=PET_001 (perdida)
+[2026-11-12 03:31:49] USUARIO=laura | ACCION=report_pet | DETalle=PET_002 (encontrada)
+[2026-11-12 03:31:49] USUARIO=sistema | ACCION=register_shelter | DETalle=A01 cap=1
+[2026-11-12 03:31:49] USUARIO=sistema | ACCION=register_entry | DETalle=DOC_1 -> A01
+[2026-11-12 03:34:30] USUARIO=Rojas | ACCION=connect | DETalle=registrado_y_conectado
+[2026-11-12 03:38:44] USUARIO=Rojas | ACCION=connect | DETalle=registrado_y_conectado
+[2026-11-12 03:39:45] USUARIO=Carlos | ACCION=connect | DETalle=registrado_y_conectado
+[2026-11-12 03:40:23] USUARIO=Carlos | ACCION=send_family_message | DETalle=Para Rojas
+[2026-11-12 03:41:48] USUARIO=Rojas | ACCION=send_family_message | DETalle=Para Carlos
+[2026-11-12 03:43:11] USUARIO=Carlos | ACCION=register_need | DETalle=N001 (alimentos)

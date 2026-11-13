@@ -1,0 +1,2 @@
+%SistemaEmergencia.Modelos.MensajeFamiliar{id: "MSG_1", documento_destinatario: "Rojas", remitente: "Carlos", contenido: "Hola ¿Cómo estás?", fecha: "2026-11-12 03:40:23", estado: :entregado}
+%SistemaEmergencia.Modelos.MensajeFamiliar{id: "MSG_2", documento_destinatario: "Carlos", remitente: "Rojas", contenido: "muy bien y tú?", fecha: "2026-11-12 03:41:48", estado: :entregado}

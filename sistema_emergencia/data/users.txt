@@ -1,0 +1,2 @@
+%SistemaEmergencia.Modelos.Usuario{username: "Carlos", password: "123", nombre: "Carlos", rol: :ciudadano, zona: "zona_norte", conectado: true}
+%SistemaEmergencia.Modelos.Usuario{username: "Rojas", password: "2024", nombre: "Rojas", rol: :administrador, zona: "centro", conectado: true}

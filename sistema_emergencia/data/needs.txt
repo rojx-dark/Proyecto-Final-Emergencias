@@ -1,0 +1,1 @@
+%SistemaEmergencia.Modelos.Necesidad{id: "N001", tipo: "alimentos", descripcion: "necesiyamos alimentos", cantidad: 50, cantidad_asignada: 0, zona: "centro", prioridad: :alta, responsable: "Carlos", estado: :pendiente}

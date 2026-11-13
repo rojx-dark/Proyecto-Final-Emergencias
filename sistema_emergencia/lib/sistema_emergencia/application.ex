@@ -11,14 +11,41 @@ defmodule SistemaEmergencia.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
+    base_children = [
+      {Phoenix.PubSub, name: SistemaEmergencia.PubSub},
       SistemaEmergencia.ProcesoAuditoria,
       SistemaEmergencia.ServidorInventario,
       SistemaEmergencia.ServidorComunidad
     ]
 
+    children =
+      if iniciar_endpoint_web?() do
+        base_children ++ [SistemaEmergenciaWeb.Endpoint]
+      else
+        IO.puts("[*] Phoenix ya está activo en http://localhost:4000 en otra terminal. Iniciando consola...")
+        base_children
+      end
+
     opts = [strategy: :one_for_one, name: SistemaEmergencia.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp iniciar_endpoint_web? do
+    if Mix.env() == :test do
+      true
+    else
+      case :gen_tcp.listen(4000, [:binary, active: false, ip: {127, 0, 0, 1}]) do
+        {:ok, socket} ->
+          :gen_tcp.close(socket)
+          true
+
+        {:error, :eaddrinuse} ->
+          false
+
+        _ ->
+          true
+      end
+    end
   end
 end
 

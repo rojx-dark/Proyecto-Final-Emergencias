@@ -96,4 +96,14 @@ defmodule SistemaEmergenciaTest do
     assert length(resumen.personas_registradas) == 1
     assert length(resumen.coincidencias_mascotas) == 1
   end
+
+  test "7. Interfaz Web Phoenix LiveView responde HTTP 200 con el panel de emergencias" do
+    conn =
+      Plug.Test.conn(:get, "/")
+      |> SistemaEmergenciaWeb.Endpoint.call(SistemaEmergenciaWeb.Endpoint.init([]))
+
+    assert conn.status == 200
+    assert conn.resp_body =~ "Sistema Distribuido de Gestión de Emergencias"
+    assert conn.resp_body =~ "Simular Conflicto Concurrente"
+  end
 end
